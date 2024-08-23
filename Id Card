@@ -1,0 +1,111 @@
+import tkinter as tk
+from tkinter import filedialog
+from PIL import Image, ImageTk
+from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
+import os
+
+photo_path = None
+
+# Function to generate the ID card
+def generate_id_card():
+    # getting user input
+
+    name = name_entry.get()
+    roll_number = roll_number_entry.get()
+    major_subject = major_subject_entry.get()
+
+    if photo_path is None:
+        result_label.config(text="Please select an image.")
+        return
+
+    # Create a PDF file for the ID card
+    pdf_file_name = f"{name.replace(' ', '_')}_ID_Card.pdf"
+    c = canvas.Canvas(pdf_file_name, pagesize=(5 * inch, 3 * inch))
+    c.setFont("Helvetica", 12)
+
+    # Adding the selected photo to the PDF
+    c.drawImage(photo_path,0.25 * inch, 0.5 * inch, width=1.5 * inch, height=1.5 * inch)
+
+    # Adding text to the PDF
+    c.setFillColorRGB(0, 0, 1)
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(1.2 * inch, 2.5 * inch, "FORMAN CHRISTIAN COLLEGE")
+    c.setFillColorRGB(0, 0, 0)
+    c.drawString(1.7 * inch, 2.2 * inch, "STUDENT ID CARD")
+    c.setFillColorRGB(1, 0, 0)
+    c.drawString(2 * inch, 1.7 * inch, f"Student Name:  {name}")
+    c.drawString(2 * inch, 1.2 * inch, f"Student ID:  {roll_number}")
+    c.drawString(2 * inch, 0.7 * inch, f"Student Major Subject:  {major_subject}")
+
+
+    c.showPage()
+    c.save()
+
+    result_label.config(text=f"ID Card generated: {pdf_file_name}")
+
+    # open PDF file
+    os.system(f'start {pdf_file_name}')
+
+    # Destroy the data collection window
+    app.destroy()
+
+#Function to browse and select image
+def browse_image():
+    global photo_path
+    file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.png *.jpg *.jpeg *.gif")])
+    if file_path:
+        # Display the selected image
+        photo_path = file_path
+        photo = Image.open(file_path)
+        photo = photo.resize((150, 150), Image.BILINEAR)
+        photo = ImageTk.PhotoImage(photo)
+        image_label.config(image=photo)
+        image_label.photo = photo
+
+# Create the tkinter application window
+app = tk.Tk()
+app.title("ID Card Generator")
+
+# Labels and Entry fields for user input
+name_label = tk.Label(app, text="Name:")
+name_label.config(foreground="red")
+name_label.grid(row=0, column=0, padx=5, pady=5, sticky="e")
+name_entry = tk.Entry(app)
+name_entry.config(foreground="blue")
+name_entry.grid(row=0, column=1, padx=5, pady=5)
+
+roll_number_label = tk.Label(app, text="Roll Number:")
+roll_number_label.config(foreground="red")
+roll_number_label.grid(row=1, column=0, padx=5, pady=5, sticky="e")
+roll_number_entry = tk.Entry(app)
+roll_number_entry.config(foreground="blue")
+roll_number_entry.grid(row=1, column=1, padx=5, pady=5)
+
+major_subject_label = tk.Label(app, text="Major Subject:")
+major_subject_label.config(foreground="red")
+major_subject_label.grid(row=2, column=0, padx=5, pady=5, sticky="e")
+major_subject_entry = tk.Entry(app)
+major_subject_entry.config(foreground="blue")
+major_subject_entry.grid(row=2, column=1, padx=5, pady=5)
+
+# Browse image button
+browse_button = tk.Button(app, text="select image to display", command=browse_image)
+browse_button.config(foreground="green")
+browse_button.grid(row=3, columnspan=2, padx=5, pady=10)
+
+# Image display label
+image_label = tk.Label(app)
+image_label.config(foreground="green")
+image_label.grid(row=4, columnspan=2, padx=5, pady=5)
+
+# Generate ID card button
+generate_button = tk.Button(app, text="Generate ID Card", command=generate_id_card)
+generate_button.config(foreground="green")
+generate_button.grid(row=5, columnspan=2, padx=5, pady=10)
+
+# Result label
+result_label = tk.Label(app, text="")
+result_label.grid(row=6, columnspan=2, padx=5, pady=5)
+
+app.mainloop()
